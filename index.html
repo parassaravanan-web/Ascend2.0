@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ascend V8</title>
 <style>
-body{font-family:Arial;background:#0b1020;color:white;margin:0}
-header{background:#121b36;padding:20px;text-align:center}
-.card{background:#1a2748;margin:10px;padding:15px;border-radius:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px}
-input,select,button{padding:10px;border-radius:10px;border:none}
-.habit,.boss{background:#24355f;padding:10px;margin:8px 0;border-radius:10px}
-.progress{height:20px;background:#333;border-radius:20px;overflow:hidden}
-.bar{height:100%;background:linear-gradient(90deg,#00e5ff,#00ff88)}
+body{font-family:Arial;background:#8B0000;color:white;margin:0}
+header{background:#B22222;padding:20px;text-align:center}
+.card{background:#E32636;margin:15px;padding:15px;border-radius:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:15px}
+input,select,button{padding:15px;border-radius:15px;border:none}
+.habit,.boss{background:#24355f;padding:15px;margin:8px 0;border-radius:15px}
+.progress{height:20px;background:#343;border-radius:20px;overflow:hidden}
+.bar{height:15%;background:linear-gradient(90deg,#CD5C5C,#FA8072)}
 </style>
 </head>
 <body>
@@ -28,7 +28,7 @@ input,select,button{padding:10px;border-radius:10px;border:none}
 <div id="lvl"></div>
 <div class="progress"><div id="bar" class="bar"></div></div>
 <div id="rank"></div>
-<div id="essence"></div>
+<div id="Bolts"></div>
 </div>
 
 <div class="card">
@@ -55,8 +55,8 @@ input,select,button{padding:10px;border-radius:10px;border:none}
 </select>
 <select id="difficulty">
 <option value="5">Easy</option>
-<option value="15">Medium</option>
-<option value="30">Hard</option>
+<option value="20">Medium</option>
+<option value="35">Hard</option>
 </select>
 <button onclick="addQuest()">Add</button>
 </div>
@@ -74,7 +74,7 @@ input,select,button{padding:10px;border-radius:10px;border:none}
 
 <script>
 let data=JSON.parse(localStorage.getItem("ascendv8")||
-'{"xp":0,"essence":0,"quests":[],"boss":null,"stats":{"Intelligence":0,"Strength":0,"Discipline":0,"Focus":0,"Wealth":0,"Social":0}}');
+'{"xp":0,"Bolts":0,"quests":[],"boss":null,"stats":{"Intelligence":0,"Strength":0,"Discipline":0,"Focus":0,"Wealth":0,"Social":0}}');
 
 function save(){
 localStorage.setItem("ascendv8",JSON.stringify(data));
@@ -97,7 +97,7 @@ if(q.done)return;
 
 q.done=true;
 data.xp+=q.xp;
-data.essence+=Math.floor(q.xp/2);
+data.Bolts+=Math.floor(q.xp/2);
 data.stats[q.cat]+=1;
 
 render();
@@ -130,7 +130,7 @@ const bosses={
 data.boss={
 type:top,
 task:bosses[top],
-reward:"200 XP + 100 Essence"
+reward:"200 XP + 100 Bolts"
 };
 
 save();
@@ -140,7 +140,7 @@ render();
 function completeBoss(){
 if(!data.boss)return;
 data.xp+=200;
-data.essence+=100;
+data.Bolts+=100;
 alert("👹 Boss Defeated!");
 data.boss=null;
 save();
@@ -161,7 +161,7 @@ let level=Math.floor(data.xp/100)+1;
 
 document.getElementById("lvl").innerHTML="<h3>Level "+level+"</h3>";
 document.getElementById("rank").innerText="Rank: "+rank(level);
-document.getElementById("essence").innerText="⚡ Essence: "+data.essence;
+document.getElementById("Bolts").innerText="⚡ Bolts: "+data.Bolts;
 document.getElementById("bar").style.width=(data.xp%100)+"%";
 
 let s="";
@@ -177,7 +177,7 @@ document.getElementById("coach").innerHTML=
 document.getElementById("quests").innerHTML=data.quests.map((q,i)=>
 `<div class='habit'>
 <b>${q.name}</b> (${q.cat})<br>
-Reward: ${q.xp} XP | ${Math.floor(q.xp/2)} Essence<br>
+Reward: ${q.xp} XP | ${Math.floor(q.xp/2)} Bolts<br>
 <button onclick='completeQuest(${i})'>${q.done?"Done":"Complete"}</button>
 </div>`).join("");
 
