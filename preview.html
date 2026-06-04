@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ascend V8</title>
+<style>
+body{font-family:Arial;background:#0b1020;color:white;margin:0}
+header{background:#121b36;padding:20px;text-align:center}
+.card{background:#1a2748;margin:10px;padding:15px;border-radius:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px}
+input,select,button{padding:10px;border-radius:10px;border:none}
+.habit,.boss{background:#24355f;padding:10px;margin:8px 0;border-radius:10px}
+.progress{height:20px;background:#333;border-radius:20px;overflow:hidden}
+.bar{height:100%;background:linear-gradient(90deg,#00e5ff,#00ff88)}
+</style>
+</head>
+<body>
+<header>
+<h1>⚔️ ASCEND V8</h1>
+<p>Become the strongest version of yourself.</p>
+</header>
+
+<div class="grid">
+<div class="card">
+<h2>🎮 Character</h2>
+<div id="lvl"></div>
+<div class="progress"><div id="bar" class="bar"></div></div>
+<div id="rank"></div>
+<div id="essence"></div>
+</div>
+
+<div class="card">
+<h2>📊 Attributes</h2>
+<div id="stats"></div>
+</div>
+
+<div class="card">
+<h2>🤖 AI Coach</h2>
+<div id="coach"></div>
+</div>
+</div>
+
+<div class="card">
+<h2>➕ Create Quest</h2>
+<input id="name" placeholder="Quest">
+<select id="cat">
+<option>Intelligence</option>
+<option>Strength</option>
+<option>Discipline</option>
+<option>Focus</option>
+<option>Wealth</option>
+<option>Social</option>
+</select>
+<select id="difficulty">
+<option value="5">Easy</option>
+<option value="15">Medium</option>
+<option value="30">Hard</option>
+</select>
+<button onclick="addQuest()">Add</button>
+</div>
+
+<div class="card">
+<h2>📜 Quests</h2>
+<div id="quests"></div>
+</div>
+
+<div class="card">
+<h2>👹 Weekly Boss Battle</h2>
+<div id="boss"></div>
+<button onclick="generateBoss()">Generate Boss</button>
+</div>
+
+<script>
+let data=JSON.parse(localStorage.getItem("ascendv8")||
+'{"xp":0,"essence":0,"quests":[],"boss":null,"stats":{"Intelligence":0,"Strength":0,"Discipline":0,"Focus":0,"Wealth":0,"Social":0}}');
+
+function save(){
+localStorage.setItem("ascendv8",JSON.stringify(data));
+}
+
+function addQuest(){
+let n=document.getElementById("name").value;
+let c=document.getElementById("cat").value;
+let xp=parseInt(document.getElementById("difficulty").value);
+if(!n)return;
+
+data.quests.push({name:n,cat:c,xp:xp,done:false});
+save();
+render();
+}
+
+function completeQuest(i){
+let q=data.quests[i];
+if(q.done)return;
+
+q.done=true;
+data.xp+=q.xp;
+data.essence+=Math.floor(q.xp/2);
+data.stats[q.cat]+=1;
+
+render();
+save();
+}
+
+function generateBoss(){
+let counts={};
+
+data.quests.forEach(q=>{
+counts[q.cat]=(counts[q.cat]||0)+1;
+});
+
+let top="Discipline";
+let max=0;
+
+for(let k in counts){
+if(counts[k]>max){max=counts[k];top=k;}
+}
+
+const bosses={
+"Intelligence":"Study 5 hours this week",
+"Strength":"Exercise 4 times this week",
+"Discipline":"Complete 20 quests this week",
+"Focus":"2 hours distraction-free work",
+"Wealth":"Work on income skills for 3 hours",
+"Social":"Start 5 conversations this week"
+};
+
+data.boss={
+type:top,
+task:bosses[top],
+reward:"200 XP + 100 Essence"
+};
+
+save();
+render();
+}
+
+function completeBoss(){
+if(!data.boss)return;
+data.xp+=200;
+data.essence+=100;
+alert("👹 Boss Defeated!");
+data.boss=null;
+save();
+render();
+}
+
+function rank(l){
+if(l<5)return "E Rank";
+if(l<10)return "D Rank";
+if(l<20)return "C Rank";
+if(l<35)return "B Rank";
+if(l<50)return "A Rank";
+return "Shadow Monarch";
+}
+
+function render(){
+let level=Math.floor(data.xp/100)+1;
+
+document.getElementById("lvl").innerHTML="<h3>Level "+level+"</h3>";
+document.getElementById("rank").innerText="Rank: "+rank(level);
+document.getElementById("essence").innerText="⚡ Essence: "+data.essence;
+document.getElementById("bar").style.width=(data.xp%100)+"%";
+
+let s="";
+for(let k in data.stats){
+s+=k+": "+data.stats[k]+"<br>";
+}
+document.getElementById("stats").innerHTML=s;
+
+let weakest=Object.entries(data.stats).sort((a,b)=>a[1]-b[1])[0][0];
+document.getElementById("coach").innerHTML=
+"Your weakest stat is <b>"+weakest+"</b>. Focus on quests that improve it.";
+
+document.getElementById("quests").innerHTML=data.quests.map((q,i)=>
+`<div class='habit'>
+<b>${q.name}</b> (${q.cat})<br>
+Reward: ${q.xp} XP | ${Math.floor(q.xp/2)} Essence<br>
+<button onclick='completeQuest(${i})'>${q.done?"Done":"Complete"}</button>
+</div>`).join("");
+
+document.getElementById("boss").innerHTML=data.boss?
+`<div class='boss'>
+<b>${data.boss.type} Boss</b><br>
+${data.boss.task}<br>
+Reward: ${data.boss.reward}<br>
+<button onclick='completeBoss()'>Defeat Boss</button>
+</div>`:
+"No boss generated.";
+}
+
+render();
+</script>
+</body>
+</html>
